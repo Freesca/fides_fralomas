@@ -1,14 +1,19 @@
 from django.shortcuts import render
 from django.conf import settings
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateAPIView, RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import PongRegisterSerializer, VerifyOTPSerializer
+from .serializers import PongRegisterSerializer, VerifyOTPSerializer, PongLoginSerializer, PongUserSerializer
 import pyotp
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenRefreshView
+from django.utils import timezone
+from .mixins import UpdateLastActivityMixin
 
 User = get_user_model()
 
@@ -22,6 +27,8 @@ class PongRegisterView(APIView):
         user.save()
         totp = pyotp.TOTP(user.otp_secret)
         otp_code = totp.now()
+
+        print(f"Generated OTP: {otp_code}")
 
         send_mail(
             subject='OTP Code',
@@ -55,6 +62,8 @@ class PongLoginView(APIView):
         totp = pyotp.TOTP(otp_secret)
         otp_code = totp.now()
 
+        print(f"Generated OTP: {otp_code}")
+
         send_mail(
             subject='OTP Code',
             message=f'Your OTP Code is: {otp_code}',
@@ -66,7 +75,30 @@ class PongLoginView(APIView):
         return Response({
             "message": "Authentication completed successfully, check the email for the OTP code"
         }, status=status.HTTP_200_OK)
+
+class PongProfileView(UpdateLastActivityMixin, RetrieveUpdateAPIView):
+    serializer_class = PongUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
     
+class PongUserView(UpdateLastActivityMixin, RetrieveAPIView):
+    serializer_class = PongUserSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all()
+    lookup_field = 'username'
+
+class PongUserListView(UpdateLastActivityMixin, ListAPIView):
+    serializer_class = PongUserSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        print(f"User list requested by {request.user}")
+        return response
+ 
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)
@@ -84,7 +116,7 @@ class VerifyOTPView(APIView):
             )
 
         totp = pyotp.TOTP(user.otp_secret)
-        if not totp.verify(otp_code):
+        if not totp.verify(otp_code, valid_window=1):
             return Response(
                 {"detail": "Invalid OTP code."},
                 status=status.HTTP_401_UNAUTHORIZED
@@ -95,3 +127,6 @@ class VerifyOTPView(APIView):
         refresh_token = str(refresh)
 
         return Response({"access": access_token, "refresh": refresh_token}, status=status.HTTP_200_OK)
+
+class PongRefreshTokenView(UpdateLastActivityMixin, TokenRefreshView):
+    pass
