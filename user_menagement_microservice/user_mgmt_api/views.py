@@ -75,6 +75,12 @@ class PongLoginView(APIView):
         return Response({
             "message": "Authentication completed successfully, check the email for the OTP code"
         }, status=status.HTTP_200_OK)
+    
+class PongLogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
 
 class PongProfileView(UpdateLastActivityMixin, RetrieveUpdateAPIView):
     serializer_class = PongUserSerializer

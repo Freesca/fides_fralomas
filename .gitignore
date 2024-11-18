@@ -1,10 +1,18 @@
 user_management_microservice/venv/
 user_management_microservice/*.pyc
 user_management_microservice/__pycache__/
-user_management_microservice/db.sqlite3
 user_management_microservice/.DS_Store
 user_management_microservice/*.log
 user_management_microservice/*.env
+
+matchmaking_microservice/venv/
+matchmaking_microservice/*.pyc
+matchmaking_microservice/__pycache__/
+matchmaking_microservice/.DS_Store
+matchmaking_microservice/*.log
+matchmaking_microservice/*.env
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

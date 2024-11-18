@@ -2,6 +2,7 @@ import requests
 import json
 
 BASE_URL = "http://localhost:8000"  # Modifica con l'URL del tuo microservizio
+MATCH_URL = "http://localhost:8001"  # Modifica con l'URL del tuo microservizio
 
 
 def register_user():
@@ -88,6 +89,20 @@ def refresh_access_token(refresh_token):
         return None
 
 
+def send_matchmaking_request(password, token):
+    """Invia una richiesta di matchmaking con una password."""
+    url = f"{MATCH_URL}/match/private-password/"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    data = {"password": password}
+    response = requests.post(url, json=data, headers=headers, timeout=65)
+    if response.status_code == 200:
+        print("Risposta matchmaking:", response.json())
+    else:
+        print("Errore matchmaking:", response.status_code, response.json())
+
+
 def main():
     print("Benvenuto! Scegli un'opzione:")
     choice = input("Vuoi registrarti o fare il login? (register/login): ").strip().lower()
@@ -121,10 +136,14 @@ def main():
     access_token = tokens.get("access")
     refresh_token = tokens.get("refresh")
 
-    # Comando per visualizzare il profilo, un utente specifico o la lista utenti
+    # Comando per varie azioni
     while True:
-        command = input("Inserisci il comando (profile, user/<username>, list, refresh, exit per uscire): ").strip()
+        command = input("Inserisci il comando (profile, user/<username>, list, refresh, match, exit per uscire): ").strip()
         if command == "exit":
+            command = input("Vuoi uscire con logout? (yes/no): ").strip()
+            if command == "yes":
+                response = requests.post(f"{BASE_URL}/logout/", headers={"Authorization": f"Bearer {access_token}"})
+                print("Risposta:", response.status_code)
             print("Uscita dal client.")
             break
 
@@ -140,6 +159,11 @@ def main():
             if new_access_token:
                 access_token = new_access_token
             continue
+        elif command == "match":
+            # Invia una richiesta di matchmaking
+            password = input("Inserisci la password per il matchmaking: ")
+            send_matchmaking_request(password, access_token)
+            continue
         else:
             print("Comando non valido. Riprova.")
             continue
@@ -150,26 +174,8 @@ def main():
             print("Risposta:", json.dumps(response.json(), indent=4))
         else:
             print("Errore:", response.status_code, response.json())
-        
-        # Effettua richiesta PATCH per modificare il profilo
-        if command == "profile":
-            command = input("Vuoi modificare il tuo profilo? (yes/no): ").strip()
-            if command == "yes":
-                command = input("Inserisci il campo da modificare (email, username, password): ").strip()
-                if command == "email":
-                    email = input("Inserisci la nuova email: ")
-                    data = {"email": email}
-                if command == "username":
-                    username = input("Inserisci il nuovo username: ")
-                    data = {"username": username}
-                if command == "password":
-                    password = input("Inserisci la tua password: ")
-                    new_password = input("Inserisci la nuova password: ")
-                    new_password_confirm = input("Conferma la nuova password: ")
-                    data = {"current_password": password, "new_password": new_password, "confirm_new_password": new_password_confirm}
-                response = requests.patch(f"{BASE_URL}/profile/", json=data, headers={"Authorization": f"Bearer {access_token}"})
-                print("Risposta:", response.status_code, response.json())
 
 
 if __name__ == "__main__":
     main()
+
