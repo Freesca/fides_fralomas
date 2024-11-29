@@ -19,6 +19,7 @@ pong_game_microservice/.DS_Store
 pong_game_microservice/*.log
 pong_game_microservice/*.env
 
+node_modules/
 
 pyenv
 
