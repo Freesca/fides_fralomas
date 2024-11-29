@@ -15,17 +15,16 @@ from datetime import timedelta
 from rest_framework.settings import api_settings
 import environ
 from .nomigrations import NoMigrations
+import os
 
 MIGRATION_MODULES = NoMigrations()
 
-env = environ.Env()
-environ.Env.read_env()
-
-PORT = 8001
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -155,7 +154,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': env('SIGNING_KEY', default='default_key_if_not_set'),
+    'SIGNING_KEY': env('SIGNING_KEY'),
     'VERIFYING_KEY': None,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'JTI_CLAIM': 'jti',

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.conf import settings
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateAPIView, RetrieveAPIView, ListAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import PongRegisterSerializer, VerifyOTPSerializer, PongLoginSerializer, PongUserSerializer
@@ -82,7 +82,7 @@ class PongLogoutView(APIView):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
 
-class PongProfileView(UpdateLastActivityMixin, RetrieveUpdateAPIView):
+class PongProfileView(UpdateLastActivityMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = PongUserSerializer
     permission_classes = [IsAuthenticated]
 

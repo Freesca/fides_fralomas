@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-
 conditions = {}
 
 def get_condition(password):
@@ -35,11 +34,11 @@ class PongPrivatePasswordMatchView(APIView):
         condition = get_condition(password)
         with condition:
             game_id = str(uuid.uuid4())
-            cache.set(game_id_key, game_id, timeout=60)
+            cache.set(game_id_key, game_id)
             condition.wait(timeout=60)
         if not cache.get(game_id_key):
             return Response({"game_id": game_id}, status=200)
-
+        
         cache.delete(game_id_key)
         return Response({"detail": "Game not found"}, status=404)
 

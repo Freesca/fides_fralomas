@@ -12,6 +12,13 @@ matchmaking_microservice/.DS_Store
 matchmaking_microservice/*.log
 matchmaking_microservice/*.env
 
+pong_game_microservice/venv/
+pong_game_microservice/*.pyc
+pong_game_microservice/__pycache__/
+pong_game_microservice/.DS_Store
+pong_game_microservice/*.log
+pong_game_microservice/*.env
+
 
 
 # Byte-compiled / optimized / DLL files
