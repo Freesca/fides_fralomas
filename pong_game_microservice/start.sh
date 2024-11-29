@@ -1,0 +1,1 @@
+pyenv/bin/python manage.py runserver 9002
