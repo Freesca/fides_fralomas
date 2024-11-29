@@ -102,5 +102,5 @@ class PongLoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
     
 class VerifyOTPSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     otp_code = serializers.CharField(required=True, max_length=6)

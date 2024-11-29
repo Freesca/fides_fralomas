@@ -74,7 +74,7 @@ class PongLoginView(APIView):
 
         return Response({
             "message": "Authentication completed successfully, check the email for the OTP code"
-        }, status=status.HTTP_200_OK)
+        }, status=400)
     
 class PongLogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -110,14 +110,14 @@ class VerifyOTPView(APIView):
         serializer = VerifyOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
         otp_code = serializer.validated_data['otp_code']
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
             return Response(
-                {"detail": "Email User not found."},
+                {"detail": "User not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
 
