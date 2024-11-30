@@ -1,1 +1,1 @@
-pyenv/bin/python manage.py runserver 9003
+pyenv/bin/python manage.py runserver 0.0.0.0:9003

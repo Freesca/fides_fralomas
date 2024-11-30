@@ -1,1 +1,1 @@
-pyenv/bin/python manage.py runserver 9001
+pyenv/bin/python manage.py runserver 0.0.0.0:9001
