@@ -53,7 +53,7 @@ class PongLoginView(APIView):
         if user is None:
             return Response(
                 {"detail": "invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         otp_secret = user.otp_secret or pyotp.random_base32()
@@ -74,7 +74,7 @@ class PongLoginView(APIView):
 
         return Response({
             "message": "Authentication completed successfully, check the email for the OTP code"
-        }, status=400)
+        }, status=status.HTTP_401_UNAUTHORIZED)
     
 class PongLogoutView(APIView):
     permission_classes = [IsAuthenticated]

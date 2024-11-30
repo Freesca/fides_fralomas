@@ -6,8 +6,8 @@ import json
 import pygame
 import sys
 
-BASE_URL = "http://localhost:8000"  # Modifica con l'URL del tuo microservizio
-MATCH_URL = "http://localhost:8001"  # Modifica con l'URL del tuo microservizio
+BASE_URL = "http://localhost:9003"  # Modifica con l'URL del tuo microservizio
+MATCH_URL = "http://localhost:9001"  # Modifica con l'URL del tuo microservizio
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 WHITE = (255, 255, 255)
@@ -57,12 +57,12 @@ def login_user():
 def verify_otp():
     """Verifica il codice OTP e salva i token."""
     print("Verifica del codice OTP")
-    email = input("Inserisci l'email per la verifica OTP: ")
+    username = input("Inserisci l'username per la verifica OTP: ")
     otp_code = input("Inserisci il codice OTP: ")
 
     url = f"{BASE_URL}/verify-otp/"
     data = {
-        "email": email,
+        "username": username,
         "otp_code": otp_code
     }
 
@@ -132,7 +132,7 @@ async def game_client(game_id, token):
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Pong")
 
-    async with websockets.connect(f"ws://localhost:8002/ws/game/{game_id}/") as websocket:
+    async with websockets.connect(f"ws://localhost:9002/ws/game/{game_id}/") as websocket:
         # Loop principale
         clock = pygame.time.Clock()
 
