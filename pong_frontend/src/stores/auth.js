@@ -4,11 +4,6 @@ import { jwtDecode } from 'jwt-decode';
 import { axiosWrapper } from '@/utils/axiosWrapper';
 import router from '@/router';
 
-
-
-// TODO: move to config/.env
-const USER_SERVICE_URL = "http://localhost:9003";
-
 export const useAuthStore = defineStore('auth', {
 	state: () => ({
 		user: null,
@@ -54,7 +49,7 @@ export const useAuthStore = defineStore('auth', {
 			this.isLoading = true;
 			this.errors = {};
 			try {
-				const response = await axios.post(`${USER_SERVICE_URL}/register/`, formData);
+				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/register/`, formData);
 				this.otpRequired = true;
 				this.userForOtp = formData.username;
 			} catch (error) {
@@ -72,7 +67,7 @@ export const useAuthStore = defineStore('auth', {
 			this.errors = {};
 			let success = false;
 			try {
-				const response = await axios.post(`${USER_SERVICE_URL}/verify-otp/`, {
+				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/verify-otp/`, {
 					username: this.userForOtp,
 					otp_code: otpCode,
 				});
@@ -105,7 +100,7 @@ export const useAuthStore = defineStore('auth', {
 			this.isLoading = true;
 			this.errors = {};
 			try {
-				const response = await axios.post(`${USER_SERVICE_URL}/login/`, formData);
+				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/login/`, formData);
 				const tokens = {
 					access: response.data.access,
 					refresh: response.data.refresh,
@@ -156,7 +151,7 @@ export const useAuthStore = defineStore('auth', {
 		async refreshAccessToken() {
 			this.isLoading = true;
 			try {
-				const response = await axios.post(`${USER_SERVICE_URL}/token_refresh/`, {
+				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/token_refresh/`, {
 					refresh: this.jwt.refresh,
 				});
 				const tokens = {
@@ -178,7 +173,7 @@ export const useAuthStore = defineStore('auth', {
 		async getUserInfo() {
 			this.isLoading = true;
 			try {
-				const response = await axiosWrapper.get(`${USER_SERVICE_URL}/profile/`);
+				const response = await axiosWrapper.get(`${import.meta.env.VITE_USER_API_URL}/profile/`);
 				this.user = response.data;
 			} catch (error) {
 				console.error('User info retrieval failed:', error);

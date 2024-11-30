@@ -21,7 +21,7 @@ axiosWrapper.interceptors.request.use(
 				await authStore.refreshAccessToken();
 				// Retry the original request with the new access token
 				error.config.headers['Authorization'] = `Bearer ${authStore.jwt.access}`;
-				return axiosInstance.request(error.config);
+				return axios.request(error.config);
 			} catch (refreshError) {
 				console.error('Token refresh failed:', refreshError);
 				authStore.logout();
