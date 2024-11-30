@@ -24,7 +24,7 @@ const authStore = useAuthStore();
 					<RouterLink to="/register">Register</RouterLink>
 				</template>
 			</nav>
-			<nav>
+			<nav class="text-start">
 				<div v-if="authStore.user" class="user-info">
 					<div>
 						<i class="fa-solid fa-user"></i> <span>{{ authStore.user?.username }}</span>
@@ -80,7 +80,7 @@ nav a:first-of-type {
 
 @media (min-width: 1024px) {
 
-	:global(#app) {
+	:global(#app:has(aside)) {
 		display: grid !important;
 		grid-template-columns: 1fr 1fr;
 		padding: 0 2rem;
@@ -112,4 +112,3 @@ nav a:first-of-type {
 	}
 }
 </style>
-<style></style>

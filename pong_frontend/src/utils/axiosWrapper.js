@@ -2,7 +2,9 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
 export const axiosWrapper = axios.create({
-	baseURL: 'http://localhost:9003', // Use your base URL here
+	headers:{
+		'Content-Type': 'application/json',
+	}
 });
 
 axiosWrapper.interceptors.request.use(

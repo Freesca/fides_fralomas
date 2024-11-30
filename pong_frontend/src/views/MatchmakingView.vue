@@ -1,11 +1,11 @@
 <script setup>
 import ProtectedRoute from '@/components/ProtectedRoute.vue';
-import GameTab from '@/components/Game.vue';
+import Matchmaking from '@/components/Matchmaking.vue';
 
 </script>
 
 <template>
 	<ProtectedRoute>
-		<GameTab />
+		<Matchmaking />
 	</ProtectedRoute>
 </template>

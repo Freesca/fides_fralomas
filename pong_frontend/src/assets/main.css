@@ -5,6 +5,12 @@
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  height: 100dvh;
+  flex-direction: column;
 }
 
 a,
@@ -22,9 +28,11 @@ a,
 }
 
 @media (min-width: 1024px) {
+  #app {
+    flex-direction: row;
+  }
   body {
     display: flex;
     place-items: center;
   }
-
 }

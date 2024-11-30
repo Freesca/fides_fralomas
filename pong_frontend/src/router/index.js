@@ -4,7 +4,8 @@ import RegisterView from '@/views/RegisterView.vue';
 import LoginView from '@/views/LoginView.vue';
 import { useAuthStore } from '@/stores/auth';
 import LogoutView from '@/views/LogoutView.vue';
-import GameView from '@/views/GameView.vue';
+import GameView from '@/views/MatchmakingView.vue';
+import GamePlayView from '@/views/GameView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,6 +34,12 @@ const router = createRouter({
       path: '/game',
       name: 'game',
       component: GameView
+    },
+
+    {
+      path: '/game/:game_id',
+      name: 'game_play',
+      component: GamePlayView
     }
   ],
 });
