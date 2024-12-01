@@ -36,7 +36,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.join_game()
             return
         
-        print(f"Received message from {self.user}: {text_data}")
         # Elabora i dati inviati dal client
         try:
             input_data = json.loads(text_data)
