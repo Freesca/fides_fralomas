@@ -80,6 +80,8 @@ export default {
 			if (success) {
 				this.$toast.success('Login successful');
 				router.push('/');
+			} else {
+				this.$toast.error(authStore.errors?.detail ?? authStore.errors?.message ?? 'Invalid OTP code');
 			}
 		},
 	},

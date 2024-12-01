@@ -1,0 +1,103 @@
+
+services:
+  frontend:
+    image: node:20-alpine
+    container_name: frontend
+    working_dir: /app
+    volumes:
+      - ./pong_frontend:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    command: ["sh", "-c", "npm install && npm run dev"]
+    environment:
+      VITE_MATCH_WS_URL: "ws://localhost:9001"
+      VITE_USER_API_URL: "http://localhost:9003"
+      VITE_MATCHMAKING_API_URL: "http://localhost:9001"
+
+  matchmaking_service:
+    image: python:3.10-slim
+    container_name: matchmaking_service
+    working_dir: /app
+    volumes:
+      - ./matchmaking_microservice:/app
+      - matchmaking_service_venv:/app/venv
+    ports:
+      - "9001:9001"
+    command: ["sh", "-c", "/app/start.sh"]
+    environment:
+      SIGNING_KEY: "example_key"
+    depends_on:
+      venv_setup:
+        condition: service_healthy
+    restart: unless-stopped
+
+  game_service:
+    image: python:3.10-slim
+    container_name: game_service
+    working_dir: /app
+    volumes:
+      - ./pong_game_microservice:/app
+      - game_service_venv:/app/venv
+    ports:
+      - "9002:9002"
+    command: ["sh", "-c", "/app/start.sh"]
+    environment:
+      SIGNING_KEY: "example_key"
+    depends_on:
+      venv_setup:
+        condition: service_healthy
+    restart: unless-stopped
+
+  user_service:
+    image: python:3.10-slim
+    container_name: user_service
+    working_dir: /app
+    volumes:
+      - ./user_menagement_microservice:/app
+      - user_service_venv:/app/venv
+    ports:
+      - "9003:9003"
+    command: ["sh", "-c", "/app/start.sh"]
+    environment:
+      SIGNING_KEY: "example_key"
+    depends_on:
+      venv_setup:
+        condition: service_healthy
+    restart: unless-stopped
+
+  venv_setup:
+    image: python:3.10-slim
+    container_name: venv_setup
+    working_dir: /app
+    volumes:
+      - ./matchmaking_microservice:/matchmaking_service
+      - ./pong_game_microservice:/game_service
+      - ./user_menagement_microservice:/user_service
+      - matchmaking_service_venv:/matchmaking_service/venv
+      - game_service_venv:/game_service/venv
+      - user_service_venv:/user_service/venv
+    command: >
+      sh -c "
+      rm -f /is_finished &&
+      (
+        (cd /matchmaking_service && rm -rf venv/* && python3 -m venv venv) ;
+        (cd /game_service && rm -rf venv/* && python3 -m venv venv) ;
+        (cd /user_service && rm -rf venv/* && python3 -m venv venv) ;
+      ) &&
+      touch /is_finished &&
+      tail -f /dev/null
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /is_finished ] || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 15s
+
+
+volumes:
+  node_modules:
+  matchmaking_service_venv:
+  game_service_venv:
+  user_service_venv:
