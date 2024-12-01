@@ -9,6 +9,9 @@ import { useRoute, useRouter } from 'vue-router';
 export default {
 	data() {
 		return {
+			GAME_WIDTH: 800,
+			GAME_HEIGHT: 560,
+
 			connectionStatus: 'connecting',
 			lastEvent: null,
 			socket: null,
@@ -145,6 +148,9 @@ export default {
 		<p>Game ID: {{ $route.params.game_id }}</p>
 		<p :class="{ 'text-danger': lastEvent?.type == 'error' }">Connection Status: {{ connectionStatus }}</p>
 		<p v-if="connectionStatus == 'disconnected'">You will be redirected to the homepage in a few seconds.</p>
-		<canvas ref="gameCanvas" width="800" height="400" style="background: black;"></canvas>
+		<canvas ref="gameCanvas" :width="GAME_WIDTH" :height="GAME_HEIGHT" style="background: black;"></canvas>
+	</div>
+	<div>
+		<RouterLink class="btn btn-outline-danger" to="/">Get out of here</RouterLink>
 	</div>
 </template>
