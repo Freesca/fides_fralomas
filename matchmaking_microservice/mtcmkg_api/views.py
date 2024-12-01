@@ -18,10 +18,17 @@ class PongPrivatePasswordMatchView(APIView):
 
     def post(self, request):
         password = request.data.get("password")
+        username = request.user.username
         if not password:
             return Response({"detail": "Password is required"}, status=400)
 
         game_id_key = f"game_id_{password}"
+
+        if cache.get(game_id_key) and username == cache.get(game_id_key).get("username"):
+            condition = get_condition(password)
+            with condition:
+                condition.notify()
+                condition.wait(timeout=1)
 
         if cache.get(game_id_key):  # Giocatore 2 trova il game_id
             game_id = cache.get(game_id_key)
@@ -34,7 +41,7 @@ class PongPrivatePasswordMatchView(APIView):
         condition = get_condition(password)
         with condition:
             game_id = str(uuid.uuid4())
-            cache.set(game_id_key, game_id)
+            cache.set(game_id_key, {"game_id": game_id, "username": username})
             condition.wait(timeout=60)
         if not cache.get(game_id_key):
             return Response({"game_id": game_id}, status=200)

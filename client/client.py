@@ -51,7 +51,7 @@ def login_user():
 
     response = requests.post(url, json=data)
     print("Risposta al login:", response.json())
-    return response.status_code == 200  # Restituisce True se il login è riuscito
+    return response.status_code == 401  # Restituisce True se il login è riuscito
 
 
 def verify_otp():
