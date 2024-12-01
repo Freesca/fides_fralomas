@@ -25,11 +25,11 @@ export default {
 		const gameId = this.route.params?.game_id;
 		if (!gameId) {
 			this.$toast.error('No game id provided');
-			// this.router.push('/');
+			this.router.push('/');
 			return;
 		}
 
-		const socketUrl = `${import.meta.env.VITE_MATCH_WS_URL}/ws/game/${gameId}`;
+		const socketUrl = `${import.meta.env.VITE_MATCH_WS_URL}/ws/game/${gameId}/`;
 		this.socket = new WebSocket(socketUrl);
 
 		// Handle WebSocket events
@@ -38,12 +38,16 @@ export default {
 			console.log('Connected to the game server');
 
 			const tokenPayload = JSON.stringify({ token: this.authStore.jwt.access });
-			this.socket.send(tokenPayload);
+			this.socket.send(this.authStore.jwt.access);
 			console.log('Access token sent to server:', tokenPayload);
 		};
 
 		this.socket.onmessage = (event) => {
-			console.log('Message from server:', event, event.data);
+			console.log('Message from server:', event);
+
+			const msg = JSON.parse(event.data);
+			console.debug('Received message:', msg);
+
 			this.lastEvent = event.data;
 		};
 

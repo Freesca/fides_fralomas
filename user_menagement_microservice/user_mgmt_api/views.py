@@ -40,12 +40,12 @@ class PongRegisterView(APIView):
         return Response({
             "message": "Registration completed successfully, check the email for the OTP code"
         }, status=status.HTTP_201_CREATED)
-    
+
 class PongLoginView(APIView):
     def post(self, request):
         serializer = PongLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         username = serializer.validated_data['username']
         password = serializer.validated_data['password']
 
@@ -74,8 +74,8 @@ class PongLoginView(APIView):
 
         return Response({
             "message": "Authentication completed successfully, check the email for the OTP code"
-        }, status=status.HTTP_401_UNAUTHORIZED)
-    
+        }, status=status.HTTP_202_ACCEPTED)
+
 class PongLogoutView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
@@ -88,7 +88,7 @@ class PongProfileView(UpdateLastActivityMixin, RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return self.request.user
-    
+
 class PongUserView(UpdateLastActivityMixin, RetrieveAPIView):
     serializer_class = PongUserSerializer
     permission_classes = [IsAuthenticated]
@@ -104,7 +104,7 @@ class PongUserListView(UpdateLastActivityMixin, ListAPIView):
         response = super().get(request, *args, **kwargs)
         print(f"User list requested by {request.user}")
         return response
- 
+
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)

@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', {
 			access: null,
 			refresh: null,
 		},
+		lastResponse: null,
 		errors: {},
 		isLoading: false,
 		otpRequired: false,
@@ -50,6 +51,7 @@ export const useAuthStore = defineStore('auth', {
 			this.errors = {};
 			try {
 				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/register/`, formData);
+				this.lastResponse = response;
 				this.otpRequired = true;
 				this.userForOtp = formData.username;
 			} catch (error) {
@@ -71,6 +73,7 @@ export const useAuthStore = defineStore('auth', {
 					username: this.userForOtp,
 					otp_code: otpCode,
 				});
+				this.lastResponse = response;
 				const tokens = {
 					access: response.data.access,
 					refresh: response.data.refresh,
@@ -101,24 +104,13 @@ export const useAuthStore = defineStore('auth', {
 			this.errors = {};
 			try {
 				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/login/`, formData);
-				const tokens = {
-					access: response.data.access,
-					refresh: response.data.refresh,
-				};
-				this.jwt = tokens;
-				this.user = response.data.user;
-				this.otpRequired = false;
-				this.userForOtp = null;
-				this.saveJwtToStorage(tokens); // Save tokens to localStorage
+				this.lastResponse = response;
+				this.otpRequired = true;
+				this.userForOtp = formData.username;
 			} catch (error) {
-				if (error.response && error.response.status === 401) {
-					// OTP required
-					this.otpRequired = true;
-					this.userForOtp = formData.username;
-				} else if (error.response && error.response.data) {
+				console.error('Login failed:', error);
+				if (error.response && error.response.data) {
 					this.errors = error.response.data;
-				} else {
-					console.error('Login failed:', error);
 				}
 			} finally {
 				this.isLoading = false;
@@ -138,13 +130,13 @@ export const useAuthStore = defineStore('auth', {
 
 		// JWT-related methods
 		isAccessTokenExpired() {
-			if (!this.jwt.access) return true; // No token means expired
+			if (!this.jwt.access) return true;
 			try {
 				const decoded = jwtDecode(this.jwt.access);
 				return decoded.exp * 1000 < Date.now();
 			} catch (error) {
 				console.error('Failed to decode JWT:', error);
-				return true; // Treat as expired if decoding fails
+				return true;
 			}
 		},
 
@@ -154,9 +146,10 @@ export const useAuthStore = defineStore('auth', {
 				const response = await axios.post(`${import.meta.env.VITE_USER_API_URL}/token_refresh/`, {
 					refresh: this.jwt.refresh,
 				});
+				this.lastResponse = response;
 				const tokens = {
 					access: response.data.access,
-					refresh: this.jwt.refresh, // Keep the refresh token unchanged
+					refresh: this.jwt.refresh,
 				};
 				this.jwt = tokens;
 				this.saveJwtToStorage(tokens); // Save updated tokens to localStorage
@@ -175,6 +168,7 @@ export const useAuthStore = defineStore('auth', {
 			try {
 				const response = await axiosWrapper.get(`${import.meta.env.VITE_USER_API_URL}/profile/`);
 				this.user = response.data;
+				this.lastResponse = response;
 			} catch (error) {
 				console.error('User info retrieval failed:', error);
 			} finally {

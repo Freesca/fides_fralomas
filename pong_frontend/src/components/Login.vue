@@ -66,14 +66,21 @@ export default {
 				password: this.form.password,
 			};
 			await authStore.login(formData);
+			if (Object.entries(authStore.errors).length){
+				this.$toast.error(authStore.errors.detail ?? authStore.errors.message ?? 'Login failed');
+			}
+			if (authStore.lastResponse && authStore.lastResponse.status < 400){
+				this.$toast.success(authStore.lastResponse.data.message);
+			}
 		},
 		async handleOtpConfirmation() {
 			const authStore = useAuthStore();
 			const success = await authStore.confirmOtp(this.otpCode);
+
 			if (success) {
+				this.$toast.success('Login successful');
 				router.push('/');
 			}
-
 		},
 	},
 };
