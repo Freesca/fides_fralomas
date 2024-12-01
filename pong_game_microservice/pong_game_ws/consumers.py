@@ -43,6 +43,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             return
 
+
         await self.game.process_input(self.player_side, input_data)
 
     async def disconnect(self, close_code):
@@ -77,7 +78,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Crea una nuova istanza del gioco se non esiste
         if self.game_id not in GameConsumer.games:
             GameConsumer.games[self.game_id] = PongGame(self.game_id)
-            self.game = GameConsumer.games[self.game_id]
+        self.game = GameConsumer.games[self.game_id]
 
         # Assegna un lato al giocatore
         game = GameConsumer.games[self.game_id]
