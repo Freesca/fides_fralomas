@@ -103,6 +103,21 @@ export default {
 			// Clear
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+			// Draw border around the game area
+			this.ctx.strokeStyle = 'white';
+			this.ctx.lineWidth = 4;
+			this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+
+			// Draw dashed center line
+			this.ctx.setLineDash([10 * scaleX, 15 * scaleX]);
+			this.ctx.beginPath();
+			this.ctx.moveTo(this.canvas.width / 2, 0);
+			this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+			this.ctx.strokeStyle = 'white';
+			this.ctx.lineWidth = 4;
+			this.ctx.stroke();
+			this.ctx.setLineDash([]);
+
 			// Ball
 			this.ctx.fillStyle = 'white';
 			this.ctx.beginPath();
@@ -114,15 +129,17 @@ export default {
 			this.ctx.fillRect(this.canvas.width - 20 * scaleX, right_paddle.y * scaleY, 20 * scaleX, 100 * scaleY); // Right paddle
 
 			// Draw the scores
-			this.ctx.font = `${20 * scaleX}px Arial`;
-			this.ctx.fillText(left_score, (this.canvas.width / 4), 20 * scaleY);
-			this.ctx.fillText(right_score, (this.canvas.width * 3) / 4, 20 * scaleY);
+			this.ctx.font = `bold ${30 * scaleX}px "Press Start 2P"`; // Pixelated font
+			this.ctx.fillStyle = 'white';
+			this.ctx.textAlign = 'center';
+			this.ctx.fillText(left_score, (this.canvas.width / 4), 80 * scaleY);
+			this.ctx.fillText(right_score, (this.canvas.width * 3) / 4, 80 * scaleY);
 
-			// Draw player names and trophies
+			// Draw player names and trophies above the score, outside the game board
 			if (this.leftPlayer && this.rightPlayer) {
-				this.ctx.font = `${15 * scaleX}px Arial`;
-				this.ctx.fillText(`${this.leftPlayer} (Trophies: ${this.leftPlayerTrophies})`, 20 * scaleX, 40 * scaleY);
-				this.ctx.fillText(`${this.rightPlayer} (Trophies: ${this.rightPlayerTrophies})`, this.canvas.width - 200 * scaleX, 40 * scaleY);
+				this.ctx.font = `bold ${15 * scaleX}px "Press Start 2P"`; // Pixelated font for names
+				this.ctx.fillText(`${this.leftPlayer} (Trophies: ${this.leftPlayerTrophies})`, (this.canvas.width / 4), 30 * scaleY);
+				this.ctx.fillText(`${this.rightPlayer} (Trophies: ${this.rightPlayerTrophies})`, (this.canvas.width * 3) / 4, 30 * scaleY);
 			}
 		},
 		setupSocket(gameId) {
@@ -195,6 +212,8 @@ export default {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 canvas {
 	border: 1px solid white;
 	margin-top: 20px;
