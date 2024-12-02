@@ -97,7 +97,23 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Aggiungi il client alla lista dei giocatori se non è già presente
         if self not in self.game.clients:
             self.game.clients.append(self)
-        await self.send_json({"message": "Authentication successful. Welcome to the game!", "player_side": self.player_side})
+        await self.send_json({
+            "message": "Authentication successful. Welcome to the game!",
+            "player_side": self.player_side,
+        })
+
+        # Invia un messaggio a tutti i client nel gruppo con i dettagli dei giocatori
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "players_update",
+                "pippo": "player_update",
+                "left_player": self.game.left_player.username if self.game.left_player else None,
+                "left_player_trophies": self.game.left_player.trophies if self.game.left_player else None,
+                "right_player": self.game.right_player.username if self.game.right_player else None,
+                "right_player_trophies": self.game.right_player.trophies if self.game.right_player else None,
+            }
+        )
 
         # Avvia il game loop se non è già in esecuzione e entrambi i giocatori sono connessi
         if len(self.game.clients) == 2 and not self.game.game_loop_running:
@@ -145,3 +161,15 @@ class GameConsumer(AsyncWebsocketConsumer):
         Funzione helper per inviare messaggi JSON al WebSocket.
         """
         await self.send(text_data=json.dumps(content))
+
+    async def players_update(self, event):
+        """
+        Gestisce l'aggiornamento dei giocatori inviando un messaggio ai client.
+        """
+        await self.send_json({
+            "type": "players_update",
+            "left_player": event["left_player"],
+            "left_player_trophies": event["left_player_trophies"],
+            "right_player": event["right_player"],
+            "right_player_trophies": event["right_player_trophies"],
+        })

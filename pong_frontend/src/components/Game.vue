@@ -21,6 +21,10 @@ export default {
 			gameState: null,
 			canvas: null,
 			ctx: null,
+			leftPlayer: null,
+			rightPlayer: null,
+			leftPlayerTrophies: null,
+			rightPlayerTrophies: null,
 		};
 	},
 	created() {
@@ -113,6 +117,13 @@ export default {
 			this.ctx.font = `${20 * scaleX}px Arial`;
 			this.ctx.fillText(left_score, (this.canvas.width / 4), 20 * scaleY);
 			this.ctx.fillText(right_score, (this.canvas.width * 3) / 4, 20 * scaleY);
+
+			// Draw player names and trophies
+			if (this.leftPlayer && this.rightPlayer) {
+				this.ctx.font = `${15 * scaleX}px Arial`;
+				this.ctx.fillText(`${this.leftPlayer} (Trophies: ${this.leftPlayerTrophies})`, 20 * scaleX, 40 * scaleY);
+				this.ctx.fillText(`${this.rightPlayer} (Trophies: ${this.rightPlayerTrophies})`, this.canvas.width - 200 * scaleX, 40 * scaleY);
+			}
 		},
 		setupSocket(gameId) {
 			const socketUrl = `${import.meta.env.VITE_MATCH_WS_URL}/ws/game/${gameId}/`;
@@ -127,6 +138,7 @@ export default {
 
 			this.socket.onmessage = (event) => {
 				const msg = JSON.parse(event.data);
+				console.log(event)
 				console.debug('Received message:', msg);
 
 				if (!this.playerSide && msg.player_side) {
@@ -136,6 +148,13 @@ export default {
 				} else if (msg.ball) {
 					// Game state update
 					this.gameState = msg;
+					this.renderGame();
+				} else if (msg.type === 'players_update') {
+					// Player update message
+					this.leftPlayer = msg.left_player;
+					this.leftPlayerTrophies = msg.left_player_trophies;
+					this.rightPlayer = msg.right_player;
+					this.rightPlayerTrophies = msg.right_player_trophies;
 					this.renderGame();
 				}
 
