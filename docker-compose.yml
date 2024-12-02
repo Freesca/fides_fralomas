@@ -11,7 +11,7 @@ services:
       - "3000:3000"
     command: ["sh", "-c", "npm install && npm run dev"]
     environment:
-      VITE_MATCH_WS_URL: "ws://localhost:9001"
+      VITE_MATCH_WS_URL: "ws://localhost:9002"
       VITE_USER_API_URL: "http://localhost:9003"
       VITE_MATCHMAKING_API_URL: "http://localhost:9001"
 
@@ -24,7 +24,15 @@ services:
       - matchmaking_service_venv:/app/venv
     ports:
       - "9001:9001"
-    command: ["sh", "-c", "/app/start.sh"]
+    command: >
+      sh -c "
+      chmod 700 -R venv;
+      . venv/bin/activate;
+      echo 'Installing pip modules...';
+      pip install -r requirements.txt 1>/dev/null;
+      echo 'PIP modules installed!';
+      python manage.py runserver 0.0.0.0:9001;
+      "
     environment:
       SIGNING_KEY: "example_key"
     depends_on:
@@ -41,7 +49,15 @@ services:
       - game_service_venv:/app/venv
     ports:
       - "9002:9002"
-    command: ["sh", "-c", "/app/start.sh"]
+    command: >
+      sh -c "
+      chmod 700 -R venv;
+      . venv/bin/activate;
+      echo 'Installing pip modules...';
+      pip install -r requirements.txt 1>/dev/null;
+      echo 'PIP modules installed!';
+      python manage.py runserver 0.0.0.0:9002;
+      "
     environment:
       SIGNING_KEY: "example_key"
     depends_on:
@@ -58,7 +74,15 @@ services:
       - user_service_venv:/app/venv
     ports:
       - "9003:9003"
-    command: ["sh", "-c", "/app/start.sh"]
+    command: >
+      sh -c "
+      chmod 700 -R venv;
+      . venv/bin/activate;
+      echo 'Installing pip modules...';
+      pip install -r requirements.txt 1>/dev/null;
+      echo 'PIP modules installed!';
+      python manage.py runserver 0.0.0.0:9003;
+      "
     environment:
       SIGNING_KEY: "example_key"
     depends_on:
