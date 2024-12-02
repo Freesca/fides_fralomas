@@ -25,6 +25,8 @@ export default {
 			rightPlayer: null,
 			leftPlayerTrophies: null,
 			rightPlayerTrophies: null,
+			gameOver: false,
+			winner: null,
 		};
 	},
 	created() {
@@ -109,20 +111,23 @@ export default {
 			this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
 
 			// Draw dashed center line
-			this.ctx.setLineDash([10 * scaleX, 15 * scaleX]);
-			this.ctx.beginPath();
-			this.ctx.moveTo(this.canvas.width / 2, 0);
-			this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
-			this.ctx.strokeStyle = 'white';
-			this.ctx.lineWidth = 4;
-			this.ctx.stroke();
-			this.ctx.setLineDash([]);
-
+			if (!this.gameOver) {
+				this.ctx.setLineDash([10 * scaleX, 15 * scaleX]);
+				this.ctx.beginPath();
+				this.ctx.moveTo(this.canvas.width / 2, 0);
+				this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+				this.ctx.strokeStyle = 'white';
+				this.ctx.lineWidth = 4;
+				this.ctx.stroke();
+				this.ctx.setLineDash([]);
+			}
 			// Ball
+			if (!this.gameOver) {
 			this.ctx.fillStyle = 'white';
 			this.ctx.beginPath();
 			this.ctx.arc(ball.x * scaleX, ball.y * scaleY, 10 * scaleX, 0, Math.PI * 2);
 			this.ctx.fill();
+			}
 
 			// Paddles
 			this.ctx.fillRect(0, left_paddle.y * scaleY, 20 * scaleX, 100 * scaleY); // Left paddle
@@ -141,6 +146,15 @@ export default {
 				this.ctx.fillText(`${this.leftPlayer} (Trophies: ${this.leftPlayerTrophies})`, (this.canvas.width / 4), 30 * scaleY);
 				this.ctx.fillText(`${this.rightPlayer} (Trophies: ${this.rightPlayerTrophies})`, (this.canvas.width * 3) / 4, 30 * scaleY);
 			}
+
+			// Draw game over message if game is over
+			if (this.gameOver) {
+				this.ctx.font = `bold ${20 * scaleX}px "Press Start 2P"`;
+				this.ctx.fillStyle = 'white';
+				this.ctx.textAlign = 'center';
+				this.ctx.fillText(`Game Over!`, this.canvas.width / 2, this.canvas.height / 2 - 30 * scaleY);
+				this.ctx.fillText(`Winner: ${this.winner}`, this.canvas.width / 2, this.canvas.height / 2); 
+			}
 		},
 		setupSocket(gameId) {
 			const socketUrl = `${import.meta.env.VITE_MATCH_WS_URL}/ws/game/${gameId}/`;
@@ -158,7 +172,11 @@ export default {
 				console.log(event)
 				console.debug('Received message:', msg);
 
-				if (!this.playerSide && msg.player_side) {
+				if (msg.type === "game_over") {
+					this.gameOver = true;
+					this.winner = msg.winner;
+					this.renderGame();
+				} else if (!this.playerSide && msg.player_side) {
 					// First message received from server: contains the player side
 					this.playerSide = msg.player_side;
 					console.debug(`Player side: ${this.playerSide}`);

@@ -7,6 +7,7 @@ class PongGame:
     PADDLE_HEIGHT = 100
     PADDLE_WIDTH = 20
     BALL_RADIUS = 10
+    WINNING_SCORE = 5
 
     def __init__(self, game_id):
         self.game_id = game_id
@@ -21,6 +22,7 @@ class PongGame:
         self.game_loop_running = False
         self.left_player = None
         self.right_player = None
+        self.game_over = False
 
     async def process_input(self, client, input_data):
         """
@@ -43,6 +45,9 @@ class PongGame:
         """
         Update game logic: ball position, collisions, scores.
         """
+        if self.game_over:
+            return
+
         ball = self.state["ball"]
 
         # Update ball position
@@ -77,6 +82,8 @@ class PongGame:
         elif ball["x"] > self.GAME_WIDTH:
             self.state["left_score"] += 1
             self.reset_ball()
+        if self.state["left_score"] >= self.WINNING_SCORE or self.state["right_score"] >= self.WINNING_SCORE:
+            self.game_over = True
 
     def reset_ball(self):
         """

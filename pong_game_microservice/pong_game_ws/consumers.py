@@ -149,6 +149,15 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         print(f"Starting game loop for game {self.game_id}")
         while game.clients:  # Esegui il ciclo finché ci sono client connessi
+            if game.game_over:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "game.over",
+                        "winner": self.game.left_player.username if game.state["left_score"] >= game.WINNING_SCORE else self.game.right_player.username,
+                    }
+                )
+                break
             await game.update_game_state()
             await game.broadcast_state()
             await asyncio.sleep(1 / 60)  # Ciclo a 60 FPS
@@ -172,4 +181,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             "left_player_trophies": event["left_player_trophies"],
             "right_player": event["right_player"],
             "right_player_trophies": event["right_player_trophies"],
+        })
+    
+    async def game_over(self, event):
+        """
+        Gestisce la fine del gioco inviando un messaggio ai client.
+        """
+        await self.send_json({
+            "type": "game_over",
+            "winner": event["winner"],
         })
