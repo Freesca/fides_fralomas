@@ -150,11 +150,18 @@ class GameConsumer(AsyncWebsocketConsumer):
         print(f"Starting game loop for game {self.game_id}")
         while game.clients:  # Esegui il ciclo finché ci sono client connessi
             if game.game_over:
+                winner = self.game.left_player if game.state["left_score"] >= game.WINNING_SCORE else self.game.right_player
+                loser = self.game.right_player if winner == self.game.left_player else self.game.left_player
+
+                # Aggiorna i trofei
+                await self.update_trophies(winner, loser)
+
+                # Invia un messaggio di fine gioco ai client
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         "type": "game.over",
-                        "winner": self.game.left_player.username if game.state["left_score"] >= game.WINNING_SCORE else self.game.right_player.username,
+                        "winner": winner.username,
                     }
                 )
                 break
@@ -191,3 +198,17 @@ class GameConsumer(AsyncWebsocketConsumer):
             "type": "game_over",
             "winner": event["winner"],
         })
+
+    @database_sync_to_async
+    def update_trophies(self, winner, loser):
+        """
+        Aggiorna i trofei dei giocatori dopo la partita.
+        """
+        try:
+            winner.trophies += 3  # Aggiungi trofei al vincitore
+            loser.trophies = max(loser.trophies - 1, 0)  # Rimuovi trofei dal perdente (ma non scendere sotto zero)
+
+            winner.save()
+            loser.save()
+        except Exception as e:
+            print(f"Errore durante l'aggiornamento dei trofei: {e}")
