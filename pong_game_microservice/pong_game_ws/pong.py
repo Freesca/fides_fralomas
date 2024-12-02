@@ -18,6 +18,9 @@ class PongGame:
             "right_score": 0,
         }
         self.clients = []
+        self.game_loop_running = False
+        self.left_player = None
+        self.right_player = None
 
     async def process_input(self, client, input_data):
         """
@@ -85,5 +88,14 @@ class PongGame:
         """
         Broadcast the updated game state to all connected clients.
         """
+        disconnected_clients = []
         for client in self.clients:
-            await client.send_json(self.state)
+            try:
+                await client.send_json(self.state)
+            except:
+                print(f"Client {client} disconnected.")
+                disconnected_clients.append(client)
+
+        # Rimuove i client disconnessi dalla lista
+        for client in disconnected_clients:
+            self.clients.remove(client)

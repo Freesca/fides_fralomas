@@ -42,7 +42,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             return
 
-
         await self.game.process_input(self.player_side, input_data)
 
     async def disconnect(self, close_code):
@@ -80,24 +79,30 @@ class GameConsumer(AsyncWebsocketConsumer):
         self.game = GameConsumer.games[self.game_id]
 
         # Assegna un lato al giocatore
-        game = GameConsumer.games[self.game_id]
-        if len(game.clients) == 0:
+        if hasattr(self.game, 'left_player') and self.game.left_player == self.user:
             self.player_side = "left"
-        elif len(game.clients) == 1:
+        elif hasattr(self.game, 'right_player') and self.game.right_player == self.user:
             self.player_side = "right"
+        elif len(self.game.clients) == 0:
+            self.player_side = "left"
+            self.game.left_player = self.user
+        elif len(self.game.clients) == 1:
+            self.player_side = "right"
+            self.game.right_player = self.user
         else:
             await self.send_json({"error": "Game room is full. Closing connection."})
             await self.close()
             return
 
-        # Aggiungi il client alla lista dei giocatori
-        game.clients.append(self)
+        # Aggiungi il client alla lista dei giocatori se non è già presente
+        if self not in self.game.clients:
+            self.game.clients.append(self)
         await self.send_json({"message": "Authentication successful. Welcome to the game!", "player_side": self.player_side})
 
-        # Avvia il game loop se entrambi i giocatori sono connessi
-        if len(game.clients) == 2:
+        # Avvia il game loop se non è già in esecuzione e entrambi i giocatori sono connessi
+        if len(self.game.clients) == 2 and not self.game.game_loop_running:
+            self.game.game_loop_running = True
             asyncio.create_task(self.game_loop())
-
 
     async def leave_game(self):
         """
@@ -112,8 +117,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Rimuovi il client dall'istanza del gioco
         game = GameConsumer.games.get(self.game_id)
         if game:
-            game.clients.remove(self)
+            if self in game.clients:
+                game.clients.remove(self)
             if not game.clients:  # Se non ci sono più client, elimina l'istanza del gioco
+                await asyncio.sleep(5)  # Attendere 5 secondi prima di eliminare il gioco
                 del GameConsumer.games[self.game_id]
 
     async def game_loop(self):
@@ -124,10 +131,14 @@ class GameConsumer(AsyncWebsocketConsumer):
         if not game:
             return
 
+        print(f"Starting game loop for game {self.game_id}")
         while game.clients:  # Esegui il ciclo finché ci sono client connessi
             await game.update_game_state()
             await game.broadcast_state()
             await asyncio.sleep(1 / 60)  # Ciclo a 60 FPS
+
+        # Una volta che non ci sono più giocatori connessi, ferma il loop
+        game.game_loop_running = False
 
     async def send_json(self, content):
         """
